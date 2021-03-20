@@ -1,0 +1,42 @@
+version: '3.4'
+
+services:
+  postgres:
+    container_name: najba-postgres
+    image: postgres:11.6
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+      DATABASE: najbacoin
+    volumes:
+      - ./scripts/db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+    # To log all queries:
+    # command: ["postgres", "-c", "log_statement=all"]
+
+  pgadmin:
+    container_name: najba-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-asd@asd.asd}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-asd}
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
+      - pgadmin:/root/.pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  pgadmin:
